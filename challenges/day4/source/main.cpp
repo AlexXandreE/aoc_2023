@@ -29,6 +29,7 @@ struct Scratchcard
     std::vector<int> lottery_numbers;
 
     std::size_t match_count{0};  // cache for part2
+    std::size_t sum{1};
 };
 
 std::vector<int> extract_numbers(std::string_view input) noexcept
@@ -89,7 +90,7 @@ void recursive_add(std::size_t start, const std::vector<Scratchcard>& cards, std
 }
 
 // brute force
-void process_part2(std::vector<Scratchcard>& cards)
+void process_part2_brute_force(std::vector<Scratchcard>& cards)
 {
     std::vector<Scratchcard> flat;
     flat.reserve(cards.size());
@@ -98,12 +99,24 @@ void process_part2(std::vector<Scratchcard>& cards)
         recursive_add(i, cards, flat);
     }
 
-    std::cout << "Part 2: " << flat.size() << "\n";
+    std::cout << "Part 2 (brute force): " << flat.size() << "\n";
+}
+
+void process_part2(std::vector<Scratchcard>& cards)
+{
+    for (size_t i = 0; i < cards.size(); ++i) {
+        for (size_t j = i + 1; j <= i + cards[i].match_count; ++j) {
+            cards[j].sum += cards[i].sum;
+        }
+    }
+
+    std::cout << "Part 2: " << std::accumulate(cards.begin(), cards.end(), 0, [](int sum, const Scratchcard& card) {
+        return sum + card.sum;
+    }) << "\n";
 }
 
 int main(int argc, char** argv)
 {
-
     std::vector<Scratchcard> cards;
     cards.reserve(kTestCase1.size());
 
@@ -112,7 +125,7 @@ int main(int argc, char** argv)
     }
 
     process_part1(cards);
-    process_part2(cards);
+    process_part2_brute_force(cards);
 
     if (argc == 1) return 0;
 
@@ -135,6 +148,7 @@ int main(int argc, char** argv)
     }
 
     process_part1(cards);
+    process_part2_brute_force(cards);
     process_part2(cards);
 
     return 0;
